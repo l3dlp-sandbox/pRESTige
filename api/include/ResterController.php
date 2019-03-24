@@ -438,7 +438,7 @@ class ResterController {
 					
 					//Register event hook
 					try{
-						$func = 'on_post_' . $routeName;
+						$func = 'on_put_' . $routeName;
 						if(function_exists($func)){
 							$func($result);
 						}
@@ -463,7 +463,7 @@ class ResterController {
 					
 					//Register event hook
 					try{
-						$func = 'on_post_' . $routeName;
+						$func = 'on_put_' . $routeName;
 						if(function_exists($func)){
 							$func($result);
 						}
@@ -843,11 +843,15 @@ class ResterController {
 	/*************************************/
 	/* OBJECT MANAGEMENT METHODS
 	/*************************************/	
-	function create($route, $object){
-		try {
+	function create($route, $object, $force = false){
+		if($force){
 			return $this->insertObject($route, $object);
-		} catch(Exception $ex) {
-			return null;
+		} else {
+			try {
+				return $this->insertObject($route, $object);
+			} catch(Exception $ex) {
+				return null;
+			}
 		}
 	}
 	
@@ -1250,11 +1254,15 @@ class ResterController {
 		return $result;	
 	}
 	
-	function delete($route, $id){
-		try{
+	function delete($route, $id, $force = false){
+		if($force){
 			return $this->deleteObjectFromRoute($route, $id);	
-		} catch(Exception $ex) {
-			return null;
+		} else {
+			try{
+				return $this->deleteObjectFromRoute($route, $id);	
+			} catch(Exception $ex) {
+				return null;
+			}
 		}
 	}
 	
@@ -1271,13 +1279,19 @@ class ResterController {
 		return empty($result) ? $result : $ID;// array($key => $ID, "status" => "deleted");
 	}
 	
-	function update($route, $id, $object) {
-		try{
+	function update($route, $id, $object, $force = false) {
+		if($force){
 			$currentRoute = $this->getAvailableRoutes()[$route];
 			$this->dbController->updateObjectOnDB($currentRoute, $id, $object);
 			return $this->findOne($route, $id);
-		} catch (Exception $ex){
-			return null;
+		} else {
+			try{
+				$currentRoute = $this->getAvailableRoutes()[$route];
+				$this->dbController->updateObjectOnDB($currentRoute, $id, $object);
+				return $this->findOne($route, $id);
+			} catch (Exception $ex){
+				return null;
+			}
 		}
 	}
 	
@@ -1683,6 +1697,19 @@ function generateCryptoKey(){
 function diff($obj1, $obj2){
 	return get_diff_both($obj1, $obj2);
 }
+	
+function now(){
+	return date("Y-m-d H:i:s");
+}
+	
+function today(){
+	return date("Y-m-d");
+}	
+
+function toDate($datetime){
+	return date("Y-m-d", strtotime($datetime));
+}
+
 
 } //END
 

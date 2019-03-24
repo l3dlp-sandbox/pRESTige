@@ -86,7 +86,7 @@ Prerequisites
 
 You need PHP 5.4+ to run the application. You will also need the have the access to a MySQL server database. You can run the following commands to make sure all php dependencies are taken care of. The following commands use PHP 7.0. You can modify them to match your version.
 
-`sudo apt-get install -y php7.0 php7.0-cli php7.0-common php7.0-mbstring php7.0-gd php7.0-intl php7.0-xml php7.0-mysql php7.0-mcrypt php7.0-zip`
+`sudo apt-get install -y php7.0 php7.0-cli php7.0-common php7.0-mbstring php7.0-gd php7.0-intl php7.0-xml php7.0-mysql php7.0-mcrypt php7.0-zip php7.0-curl`
 
 If you wish to deploy it to Apache server, then you need to make sure that you run the follwing commands.
 
@@ -406,27 +406,30 @@ You can write any kind of PHP code here. You can also use the helper functions m
 
 #### query($queryString)
 
-200 OK with the result of executing the specified querystring against the database. It can be any kind of SQL statement such as SELECT, INSERT, UPDATE, DELETE or a CALL to any stored procedure, etc.
+Returns the result of executing the specified querystring against the database. It can be any kind of SQL statement such as SELECT, INSERT, UPDATE, DELETE or a CALL to any stored procedure, etc.
 
 #### find($route, $filters = NULL, $match_any = false)
 
-200 OK with the result of querying a particular REST API route by passing filter parameters. By default, all of the filter parameters will be matched. If you pass $match_any = true, then any of the filter parameter will be matched.
+Returns the result of querying a particular REST API route by passing filter parameters. By default, all of the filter parameters will be matched. If you pass $match_any = true, then any of the filter parameter will be matched.
 
 #### findOne($route, $id)
 
-200 OK with the result
+Finds a single object with specific id.
 
-#### create($route, $object)
+#### create($route, $object, $throw_exception = false)
 
-201 CREATED with the created object with id
+Returns the created object with the created object with id. returns null in case of error.
+If you set $throw_exception = true, then it will throw exception in case of error.
 
-#### update($route, $id, $object)
+#### update($route, $id, $object, $throw_exception = false)
 
-200 OK with the updated object
+Returns the updated object. returns null in case of error.
+If you set $throw_exception = true, then it will throw exception in case of error.
 
-#### delete($route, $id)
+#### delete($route, $id, $throw_exception = false)
 
-200 OK with the deleted object
+Returns the deleted object. returns null in case of error.
+If you set $throw_exception = true, then it will throw exception in case of error.
 
 #### showResult($value)
 
@@ -470,11 +473,11 @@ $to = ["recepientsemail@theirdomain.com"];
 $subject = "SUBJECT GOES HERE";
 $body = "TEXT or HTML GOES HERE";
 $smtp = array(
-	"host": "smtp.yourdomain.com",
-	"username": "YOUR USERNAME",
-	"password": "YOUR PASSWORD",
-	"proto": "tls",
-	"port": 587
+	"host"=> "smtp.yourdomain.com",
+	"username"=> "YOUR USERNAME",
+	"password"=> "YOUR PASSWORD",
+	"proto"=> "tls",
+	"port"=> 587
 );
 $prestige->sendMail($from, $to, $subject, $body, $smtp);
 ```
@@ -548,19 +551,32 @@ POST users/login
 
 #### encrypt($text, $key)
 
-Encrypt text.
+Encrypt text. Only use generateCryptoKey() for generating $key. Don't use any random string as $key.
 
 #### decrypt($text, $key)
 
-Decrypt text.
+Decrypt text. Use the $key previously generated from generateCryptoKey(). It has to be the same $key that was used for encryption.
 
 #### generateCryptoKey()
 
-Generate key to be used in encryption and decryption.
+Generate key to be used in encryption and decryption. Everytime you call this method, a new key will be generated. So ideal way is to generate a key, store it somewhere safe, and use it for encryption and decryption. If you pass any random key to encrypt/decrypt functions, it will generate error.
 
 #### diff($obj1, $obj2)
 
 Generate diff between two objects. Can be useful for generating audit logs.
+
+#### now()
+
+Get a datetime object in a format that is compatible with MySQL.
+
+#### today()
+
+Get a date object in a format that is compatible with MySQL.
+
+#### toDate($datetime)
+
+Convert a datetime object to a date object in a format that is compatible with MySQL.
+
 
 Events
 -----
@@ -590,11 +606,13 @@ Examples:
 ```php
 function before_post_users($data){
 	//Write code to check if $data['email'] contains prohibited domain names.
+	//Make note that $data could be an array if you are doing bulk operations
 }
 
 
 function on_post_users($result){
 	//Write code to send an email to $result['email'] using send_email_sparkpost() method
+	//Make note that $result could be an array if you are doing bulk operations	
 }
 ```
 

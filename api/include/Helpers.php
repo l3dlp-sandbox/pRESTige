@@ -381,4 +381,17 @@ function get_diff_both($obj1, $obj2){
     
 }
 
+function now(){
+	return date("Y-m-d H:i:s");
+}	
+
+function today(){
+	return date("Y-m-d");
+}	
+
+function toDate($datetime){
+	return date("Y-m-d", strtotime($datetime));
+}
+
+
 ?>
